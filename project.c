@@ -7,8 +7,8 @@
 #define MAX_QUEUE_SIZE 100
 #define INITIAL_PRODUCTION_RATE 1
 #define CONSUMER_INTERVAL 10
-#define CHECK_INTERVAL 1
-#define SLOW_DOWN_FACTOR 1000000
+#define CHECK_INTERVAL 2
+#define SLOW_DOWN_FACTOR 100000
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -99,8 +99,8 @@ void *lengthChecker(void *arg){
 }
 
 int main(){
-    // Open a file in writing mode
-    fptr = fopen("filename.txt", "w");
+    //log file
+    fptr = fopen("memUsage.log", "w");
     
     fprintf(fptr, "%d\n", MAX_QUEUE_SIZE);
 

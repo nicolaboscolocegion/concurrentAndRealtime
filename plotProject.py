@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 # Read data from the file
-with open('filename.txt', 'r') as file:
+with open('memUsage.log', 'r') as file:
     lines = file.read().splitlines()
 
 # Extract maximum y-value and other y-values
