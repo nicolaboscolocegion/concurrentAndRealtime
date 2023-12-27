@@ -1,7 +1,10 @@
 #include "queue.h"
 
-
 void initializeQueue(queue *q, int size) {
+    if (size < 0) {
+        q = NULL;
+        return;
+    }
     q->items = (int *)malloc(size * sizeof(int));
     q->maxSize = size;
     q->front = -1;
@@ -9,7 +12,9 @@ void initializeQueue(queue *q, int size) {
 }
 
 int isFull(queue *q) {
-    if ((q->front == q->rear + 1) || (q->front == 0 && q->rear == q->maxSize - 1)) return 1;
+    if ((q->front == q->rear + 1) ||
+        (q->front == 0 && q->rear == q->maxSize - 1))
+        return 1;
     return 0;
 }
 
@@ -26,18 +31,15 @@ void enqueue(queue *q, int element) {
 
 int dequeue(queue *q) {
     int element;
-    if (isEmpty(q)) {
-        return -1;
+
+    element = q->items[q->front];
+    if (q->front == q->rear) {
+        q->front = -1;
+        q->rear = -1;
     } else {
-        element = q->items[q->front];
-        if (q->front == q->rear) {
-            q->front = -1;
-            q->rear = -1;
-        } else {
-            q->front = (q->front + 1) % q->maxSize;
-        }
-        return element;
+        q->front = (q->front + 1) % q->maxSize;
     }
+    return element;
 }
 
 int size(queue *q) {
@@ -49,7 +51,6 @@ int size(queue *q) {
         return q->maxSize - q->front + q->rear + 1;
     }
 }
-
 
 void freeQueue(queue *q) {
     free(q->items);
