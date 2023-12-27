@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "queue.h"
 
 #define MAX_QUEUE_SIZE 100
 #define INITIAL_PRODUCTION_RATE 1
@@ -13,8 +14,7 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-int messageQueue[MAX_QUEUE_SIZE];
-int queueSize = 0;
+queue messageQueue;
 int productionRate = INITIAL_PRODUCTION_RATE;
 FILE *fptr;
 
@@ -25,18 +25,19 @@ void *producer(void *arg){
 
         // Produce message
 
-        if (queueSize < MAX_QUEUE_SIZE){
-            messageQueue[queueSize++] = 1;
-            //fprintf(fptr, "%d\n", queueSize);
+        if (!isFull(&messageQueue)){
+            enqueue(&messageQueue, rand());
+            //fprintf(fptr, "%d\n", size(&messageQueue));
         }
         else{
             printf("OVERFLOW, the production rate was: %d", productionRate);
-            fprintf(fptr, "%d\n", queueSize);
+            fprintf(fptr, "%d\n", size(&messageQueue));
             fclose(fptr);
+            freeQueue(&messageQueue);
             exit(1);
         }
 
-        printf("Produced. Queue size: %d\n", queueSize);
+        printf("Produced. Queue size: %d\n", size(&messageQueue));
 
         currentRate = productionRate;
         pthread_cond_signal(&cond);
@@ -53,12 +54,13 @@ void *consumer(void *arg){
     while (1){
         pthread_mutex_lock(&mutex);
 
-        if (queueSize == 0){pthread_cond_wait(&cond, &mutex);}
+        if (isEmpty(&messageQueue)) 
+            pthread_cond_wait(&cond, &mutex);
 
         // Consume message
-        messageQueue[--queueSize] = 0;
-        printf("Consumed. Queue size: %d\n", queueSize);
-        //fprintf(fptr, "%d\n", queueSize);
+        dequeue(&messageQueue);
+        printf("Consumed. Queue size: %d\n", size(&messageQueue));
+        //fprintf(fptr, "%d\n", size(&messageQueue));
 
         pthread_mutex_unlock(&mutex);
         // Simulate consumed message usage
@@ -74,20 +76,20 @@ void *lengthChecker(void *arg){
 
         pthread_mutex_lock(&mutex);
         // Adjust production rate
-        if (queueSize < MAX_QUEUE_SIZE / 2){
-            productionRate +=  (MAX_QUEUE_SIZE-queueSize)/10;
+        if (size(&messageQueue) < MAX_QUEUE_SIZE / 2){
+            productionRate +=  (MAX_QUEUE_SIZE-size(&messageQueue))/10;
             //productionRate += 1;
             printf("Increased production rate to %d\n", productionRate);
         }
-        else if (queueSize >= (2 * MAX_QUEUE_SIZE / 3)){
-            productionRate /= (queueSize);
+        else if (size(&messageQueue) >= (2 * MAX_QUEUE_SIZE / 3)){
+            productionRate /= (size(&messageQueue));
             //productionRate -= 5;
 
             if(productionRate<=0) productionRate=1;
             printf("Decreased production rate to %d\n", productionRate);
         }
-        printf("Queue length: %d\n", queueSize);
-        fprintf(fptr, "%d\n", queueSize);
+        printf("Queue length: %d\n", size(&messageQueue));
+        fprintf(fptr, "%d\n", size(&messageQueue));
         fflush(fptr);
         
         pthread_mutex_unlock(&mutex);
@@ -99,6 +101,9 @@ void *lengthChecker(void *arg){
 }
 
 int main(){
+
+    initializeQueue(&messageQueue, MAX_QUEUE_SIZE);
+
     //log file
     fptr = fopen("memUsage.log", "w");
     
