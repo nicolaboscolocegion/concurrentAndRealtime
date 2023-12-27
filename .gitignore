@@ -3,3 +3,5 @@ memUsage.log
 !*.*
 !*/
 .DS_Store
+project.dSYM
+.vscode
