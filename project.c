@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,12 +12,22 @@
 #define CHECK_INTERVAL 2
 #define SLOW_DOWN_FACTOR 100000
 
+// monitor inizializer
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 queue messageQueue;
 int productionRate = INITIAL_PRODUCTION_RATE;
+// file for logs
 FILE *fptr;
+
+void sigHandler(int sign) {
+
+    fclose(fptr);
+    freeQueue(&messageQueue);
+    exit(0);
+}
+
 
 void *producer(void *arg) {
     int currentRate;
@@ -27,8 +38,8 @@ void *producer(void *arg) {
 
         if (!isFull(&messageQueue)) {
             enqueue(&messageQueue, rand());
-            // fprintf(fptr, "%d\n", size(&messageQueue));
         } else {
+            // if the queue is full, end the program
             printf("OVERFLOW, the production rate was: %d", productionRate);
             fprintf(fptr, "%d\n", size(&messageQueue));
             fclose(fptr);
@@ -68,6 +79,11 @@ void *consumer(void *arg) {
 }
 
 void *lengthChecker(void *arg) {
+    signal(SIGINT, sigHandler);
+    signal(SIGHUP, sigHandler);
+    signal(SIGKILL, sigHandler);
+    signal(SIGTERM, sigHandler);
+
     while (1) {
         usleep(SLOW_DOWN_FACTOR * CHECK_INTERVAL);
 
@@ -94,6 +110,9 @@ void *lengthChecker(void *arg) {
     pthread_exit(NULL);
 }
 
+
+
+
 int main() {
     initializeQueue(&messageQueue, MAX_QUEUE_SIZE);
 
@@ -111,6 +130,8 @@ int main() {
     pthread_join(producerThread, NULL);
     pthread_join(consumerThread, NULL);
     pthread_join(checkerThread, NULL);
+
+    
 
     return 0;
 }
