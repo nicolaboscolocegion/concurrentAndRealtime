@@ -1,5 +1,10 @@
 import matplotlib.pyplot as plt
 
+'''
+the memUsage.log has as it's first line the size of the queue
+the and for the rest of the lines are the various logs of memory occupation
+'''
+
 # Read data from the file
 with open('memUsage.log', 'r') as file:
     lines = file.read().splitlines()
