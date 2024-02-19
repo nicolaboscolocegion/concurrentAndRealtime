@@ -110,9 +110,6 @@ void *lengthChecker(void *arg) {
     pthread_exit(NULL);
 }
 
-
-
-
 int main() {
     initializeQueue(&messageQueue, MAX_QUEUE_SIZE);
 
@@ -130,8 +127,6 @@ int main() {
     pthread_join(producerThread, NULL);
     pthread_join(consumerThread, NULL);
     pthread_join(checkerThread, NULL);
-
-    
 
     return 0;
 }
