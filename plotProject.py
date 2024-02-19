@@ -17,9 +17,9 @@ y_values = list(map(int, lines[1:]))
 x_values = list(range(1, len(y_values) + 1))
 
 plt.plot(x_values, y_values, marker='o', linestyle='-', color='b')
-plt.title('Graph from File Data')
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
+plt.title('Mem usage')
+plt.xlabel('time (unit deppends on the code)')
+plt.ylabel('queue occupation')
 plt.ylim(0, max_y)  # Set y-axis limit based on the maximum y-value
 plt.yticks(range(0, max_y + 1, max_y // 10))
 plt.grid(axis='y', linestyle='--', alpha=0.7)
