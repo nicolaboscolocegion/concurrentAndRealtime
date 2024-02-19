@@ -3,4 +3,5 @@ memUsage.log
 !*/
 .DS_Store
 project.dSYM
-vscode
+.vscode
+mem_alloc.dSYM
